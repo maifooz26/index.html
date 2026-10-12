@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Govandi AI</title>
+  <meta name="description" content="A sleek conversational workspace for reasoning, drafting, and real-time execution with neural webhook workflows." />
+
+  <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'bento': '0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)',
+            'command': '0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.09)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Minimalist scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    html:not(.dark) ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    /* Bento panels */
+    .dark .bento-panel {
+      background: rgba(13, 15, 21, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+    html:not(.dark) .bento-panel {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .dark .bento-card {
+      background: rgba(18, 21, 30, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    html:not(.dark) .bento-card {
+      background: rgba(248, 250, 252, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    /* Keyboard badge */
+    .kbd-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    .dark .kbd-badge {
+      background: rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    html:not(.dark) .kbd-badge {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Dot grid */
+    .dark .subtle-grid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    html:not(.dark) .subtle-grid {
+      background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Markdown typography */
+    .prose-custom p { margin-bottom: 0.75rem; line-height: 1.65; }
+    .prose-custom p:last-child { margin-bottom: 0; }
+    .prose-custom ul { list-style-type: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+    .prose-custom ol { list-style-type: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+    .prose-custom code {
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.35rem;
+      font-size: 0.85em;
+    }
+    .dark .prose-custom code {
+      background: rgba(255, 255, 255, 0.07);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    html:not(.dark) .prose-custom code {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .prose-custom pre {
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      font-size: 0.83em;
+      line-height: 1.6;
+    }
+    .dark .prose-custom pre {
+      background: #0d0f15;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+    html:not(.dark) .prose-custom pre {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+    }
+    .prose-custom pre code { background: transparent; padding: 0; border: none; color: inherit; }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-[#090a0f] text-slate-800 dark:text-slate-200 antialiased overflow-hidden selection:bg-indigo-500/30 selection:text-white transition-colors duration-200">
+
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-5xl h-64 bg-gradient-to-b dark:from-indigo-500/[0.04] dark:via-violet-500/[0.02] from-indigo-500/[0.08] via-violet-500/[0.03] to-transparent pointer-events-none blur-3xl z-0"></div>
+
+  <!-- Mobile Backdrop Overlay -->
+  <div id="mobile-backdrop" onclick="toggleSidebar(false)" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs md:hidden transition-opacity"></div>
+
+  <!-- Responsive App Container -->
+  <div class="h-full w-full flex subtle-grid relative z-10 overflow-hidden">
+    
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 h-full bento-panel border-r border-black/[0.08] dark:border-white/[0.07] flex flex-col transition-all duration-300 ease-in-out backdrop-blur-2xl w-72 translate-x-0">
+      <div class="w-72 flex flex-col h-full flex-shrink-0">
+        <!-- Sidebar Header -->
+        <div class="p-3.5 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <!-- Govandi Logo Vector -->
+            <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center p-1 shadow-sm flex-shrink-0">
+              <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 100 100">
+                <rect fill="#FFFFFF" height="85.86" rx="10" stroke="#000000" stroke-width="4.5" transform="rotate(45 50 50)" width="85.86" x="7.07" y="7.07"></rect>
+                <circle cx="50" cy="50" fill="none" r="32" stroke="#DC2626" stroke-width="12"></circle>
+                <rect fill="#000099" height="24" width="88" x="6" y="38"></rect>
+                <text fill="#FFFFFF" font-family="'Inter', sans-serif, Arial" font-size="15" font-weight="900" letter-spacing="0.5" text-anchor="middle" x="50" y="55">GOVANDI</text>
+              </svg>
+            </div>
+            <div>
+              <span class="font-display font-semibold text-xs tracking-tight dark:text-white text-slate-900">Govandi AI</span>
+              <p class="text-[10px] dark:text-slate-400 text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+                <span id="connection-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shadow-[0_0_6px_rgba(52,211,153,0.6)]"></span>
+                <span id="connection-text">Ready</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Collapse button -->
+          <button onclick="toggleSidebar(false)" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/5 transition-colors cursor-pointer" title="Collapse Sidebar">
+            <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- New Chat Button -->
+        <div class="p-3">
+          <button onclick="startNewChat()" class="group w-full flex items-center py-2 px-3 rounded-lg dark:bg-white/[0.05] bg-slate-200/70 hover:dark:bg-white/[0.08] hover:bg-slate-200 dark:text-white text-slate-800 text-xs font-medium transition-all border border-slate-300 dark:border-white/[0.08] active:scale-[0.99] cursor-pointer">
+            <div class="flex items-center gap-2">
+              <i data-lucide="plus" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"></i>
+              <span class="font-sans font-medium text-slate-800 dark:text-slate-200">New Chat</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Recent Chats Header -->
+        <div class="px-3 pt-1 pb-1">
+          <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1 mb-1">
+            <span>Recent Chats</span>
+            <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i>
+          </div>
+        </div>
+
+        <!-- Chat History List -->
+        <div id="chat-history-list" class="flex-1 overflow-y-auto px-2 space-y-0.5"></div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-3 border-t border-black/[0.06] dark:border-white/[0.06] space-y-2">
+          <div class="py-1 px-2.5 rounded-lg dark:bg-white/[0.02] bg-black/[0.02] border border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+              <span class="text-[11px] font-mono dark:text-slate-400 text-slate-600">Engine Core</span>
+            </div>
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-mono dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-medium">LIVE</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full min-w-0 relative overflow-hidden dark:bg-[#090a0f] bg-slate-50 z-10 transition-colors duration-200">
+      <!-- Header -->
+      <header class="h-14 border-b border-black/[0.06] dark:border-white/[0.06] bento-panel flex items-center justify-between px-3 sm:px-5 z-10 flex-shrink-0 transition-colors">
+        <div class="flex items-center space-x-2.5">
+          <!-- Toggle Sidebar Button -->
+          <button id="sidebar-toggle-btn" onclick="toggleSidebar()" class="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.06] border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 transition-all flex items-center justify-center cursor-pointer" title="Toggle sidebar">
+            <i data-lucide="panel-left-close" id="sidebar-toggle-icon" class="w-4 h-4"></i>
+          </button>
+
+          <div class="flex items-center space-x-2">
+            <h2 id="current-chat-title" class="font-semibold text-xs sm:text-sm text-slate-800 dark:text-white tracking-tight font-display truncate max-w-[180px] sm:max-w-md">New Conversation</h2>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+          <!-- Export Transcript -->
+          <button onclick="exportCurrentChat()" class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.06] border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 transition-all flex items-center justify-center cursor-pointer" title="Export Transcript">
+            <i data-lucide="download" class="w-4 h-4"></i>
+          </button>
+          <!-- Theme Toggle -->
+          <button onclick="toggleTheme()" class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.06] border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 transition-all flex items-center justify-center cursor-pointer" title="Toggle Theme">
+            <i data-lucide="sun" id="theme-toggle-icon" class="w-4 h-4 text-amber-400"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Messages Stream -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-5 scroll-smooth"></div>
+
+      <div class="p-3 sm:p-5 pb-5 pt-2 flex-shrink-0 relative">
+        <div class="max-w-3xl mx-auto">
+          <form id="chat-form" onsubmit="handleChatSubmit(event)" class="relative rounded-xl dark:bg-[#12151e]/90 bg-white border border-slate-300 dark:border-white/[0.1] shadow-command transition-all focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/40 backdrop-blur-xl">
+            <div class="flex items-end px-3 py-2">
+              <textarea id="user-input" rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleKeyDown(event)" placeholder="Ask Govandi AI anything or use suggested prompts..." class="flex-1 bg-transparent dark:text-slate-100 text-slate-800 placeholder-slate-500 text-sm py-2 px-1 focus:outline-none resize-none max-h-36 leading-relaxed font-sans"></textarea>
+              <div class="p-1 flex items-center gap-2 flex-shrink-0">
+                <span class="text-[10px] text-slate-500 font-mono hidden sm:inline select-none">
+                  <span class="kbd-badge">↵</span> to send
+                </span>
+                <button id="send-button" type="submit" disabled title="Send message" class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all active:scale-95 shadow-sm border border-indigo-400/30 cursor-pointer">
+                  <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+          <div class="mt-2 text-center">
+            <span class="text-[10px] font-mono dark:text-slate-400 text-slate-500">Govandi AI can make mistakes. Verify critical responses.</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Rename Modal -->
+  <div id="rename-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="dark:bg-[#12151e] bg-white border border-slate-300 dark:border-white/[0.1] rounded-xl p-5 w-full max-w-sm shadow-2xl">
+      <div class="flex items-center justify-between mb-2.5">
+        <h3 class="text-xs font-semibold dark:text-white text-slate-800 font-display tracking-tight flex items-center gap-2">
+          <i data-lucide="edit-2" class="w-3 h-3 text-indigo-400"></i> Rename Conversation
+        </h3>
+        <button onclick="closeRenameModal()" class="text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+      <form onsubmit="handleRenameSubmit(event)">
+        <input id="rename-input" type="text" placeholder="Enter conversation title..." class="w-full dark:bg-[#090a0f] bg-slate-50 border border-slate-300 dark:border-white/[0.1] rounded-lg px-3 py-2 text-xs dark:text-white text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mb-4 font-sans" />
+        <div class="flex justify-end space-x-2">
+          <button type="button" onclick="closeRenameModal()" class="px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-medium cursor-pointer">Cancel</button>
+          <button type="submit" class="px-3 py-1.5 rounded-lg text-xs bg-indigo-600 text-white hover:bg-indigo-500 font-medium transition-all shadow-sm cursor-pointer">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toast-content" class="dark:bg-[#12151e] bg-white border border-slate-200 dark:border-white/[0.1] dark:text-slate-100 text-slate-800 px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-xs backdrop-blur-xl">
+      <i id="toast-icon" data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+      <span id="toast-message" class="font-medium tracking-normal text-[11px]">Success</span>
+    </div>
+  </div>
+
+  <script>
+    // Webhook Endpoint (can be updated via settings)
+    let WEBHOOK_URL = localStorage.getItem('govandi_webhook_url') || 'https://sidms1862.app.n8n.cloud/webhook/chat-agent';
+
+    // State
+    let chats = [];
+    let currentChatId = null;
+    let chatToRenameId = null;
+    let isSidebarOpen = window.innerWidth >= 768;
+    let sessionId = localStorage.getItem('govandi_session_id') || 'session_' + Math.random().toString(36).substring(2, 11);
+    let isProcessing = false;
+
+    // Logo Vector SVG Helper
+    function getGovandiLogoSvg(size = 'w-6 h-6') {
+      return `
+        <div class="${size} rounded-lg bg-white/5 border border-white/10 flex items-center justify-center p-0.5 shadow-sm flex-shrink-0">
+          <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 100 100">
+            <rect fill="#FFFFFF" height="85.86" rx="10" stroke="#000000" stroke-width="4.5" transform="rotate(45 50 50)" width="85.86" x="7.07" y="7.07"></rect>
+            <circle cx="50" cy="50" fill="none" r="32" stroke="#DC2626" stroke-width="12"></circle>
+            <rect fill="#000099" height="24" width="88" x="6" y="38"></rect>
+            <text fill="#FFFFFF" font-family="'Inter', sans-serif, Arial" font-size="15" font-weight="900" letter-spacing="0.5" text-anchor="middle" x="50" y="55">GOVANDI</text>
+          </svg>
+        </div>
+      `;
+    }
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('govandi_session_id')) {
+        localStorage.setItem('govandi_session_id', sessionId);
+      }
+
+      // Initialize Theme
+      const savedTheme = localStorage.getItem('govandi_theme') || 'dark';
+      setTheme(savedTheme);
+
+      // Load Chats
+      try {
+        const saved = localStorage.getItem('govandi_chats');
+        chats = saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        chats = [];
+      }
+
+      currentChatId = localStorage.getItem('govandi_current_chat_id');
+
+      if (chats.length === 0) {
+        startNewChat();
+      } else {
+        if (!currentChatId || !chats.find(c => c.id === currentChatId)) {
+          currentChatId = chats[0].id;
+        }
+        renderChatHistory();
+        loadCurrentChatMessages();
+      }
+
+      // Apply Initial Sidebar State based on device width
+      const savedSidebar = localStorage.getItem('govandi_sidebar_open');
+      if (savedSidebar !== null) {
+        isSidebarOpen = savedSidebar === 'true';
+      }
+      updateSidebarUI();
+
+      // Close dropdowns on outside click
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.chat-menu-container')) {
+          closeAllMenus();
+        }
+      });
+
+      // Responsive window resize listener
+      window.addEventListener('resize', () => {
+        if (window.innerWidth < 768 && isSidebarOpen && !document.getElementById('mobile-backdrop').classList.contains('hidden')) {
+          // Keep backdrop open on mobile
+        } else if (window.innerWidth >= 768) {
+          document.getElementById('mobile-backdrop').classList.add('hidden');
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          startNewChat();
+        }
+        if (e.key === 'Escape') {
+          closeRenameModal();
+          closeAllMenus();
+          if (window.innerWidth < 768) toggleSidebar(false);
+        }
+      });
+
+      // Enable/disable send button on input
+      const input = document.getElementById('user-input');
+      input.addEventListener('input', () => {
+        document.getElementById('send-button').disabled = !input.value.trim() || isProcessing;
+      });
+
+      lucide.createIcons();
+    });
+
+    // Theme Management
+    function setTheme(theme) {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-toggle-icon');
+      if (theme === 'dark') {
+        html.classList.add('dark');
+        if (icon) {
+          icon.setAttribute('data-lucide', 'sun');
+          icon.className = 'w-4 h-4 text-amber-400';
+        }
+      } else {
+        html.classList.remove('dark');
+        if (icon) {
+          icon.setAttribute('data-lucide', 'moon');
+          icon.className = 'w-4 h-4 text-indigo-600';
+        }
+      }
+      localStorage.setItem('govandi_theme', theme);
+      lucide.createIcons();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      setTheme(isDark ? 'light' : 'dark');
+      showToast(isDark ? 'Switched to Light mode' : 'Switched to Dark mode');
+    }
+
+    // Sidebar Toggle Management
+    function toggleSidebar(forceState) {
+      if (typeof forceState === 'boolean') {
+        isSidebarOpen = forceState;
+      } else {
+        isSidebarOpen = !isSidebarOpen;
+      }
+      localStorage.setItem('govandi_sidebar_open', String(isSidebarOpen));
+      updateSidebarUI();
+    }
+
+    function updateSidebarUI() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const toggleIcon = document.getElementById('sidebar-toggle-icon');
+
+      if (!sidebar) return;
+
+      if (isSidebarOpen) {
+        sidebar.classList.remove('-translate-x-full', 'md:w-0', 'md:border-r-0', 'md:opacity-0', 'pointer-events-none', 'md:overflow-hidden');
+        sidebar.classList.add('w-72', 'translate-x-0', 'opacity-100');
+        if (backdrop && window.innerWidth < 768) backdrop.classList.remove('hidden');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+      } else {
+        sidebar.classList.remove('w-72', 'translate-x-0', 'opacity-100');
+        sidebar.classList.add('-translate-x-full', 'md:w-0', 'md:border-r-0', 'md:opacity-0', 'pointer-events-none', 'md:overflow-hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left');
+      }
+      lucide.createIcons();
+    }
+
+    // Chat Management
+    function startNewChat() {
+      const newChat = {
+        id: 'chat_' + Date.now(),
+        title: 'New Conversation',
+        pinned: false,
+        messages: [],
+        updatedAt: Date.now()
+      };
+      chats.unshift(newChat);
+      currentChatId = newChat.id;
+      saveChats();
+      renderChatHistory();
+      loadCurrentChatMessages();
+
+      if (window.innerWidth < 768) {
+        toggleSidebar(false);
+      }
+    }
+
+    function saveChats() {
+      try {
+        localStorage.setItem('govandi_chats', JSON.stringify(chats));
+        if (currentChatId) {
+          localStorage.setItem('govandi_current_chat_id', currentChatId);
+        }
+      } catch (e) {
+        console.error('Failed to save chats:', e);
+      }
+    }
+
+    function renderChatHistory() {
+      const listContainer = document.getElementById('chat-history-list');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = '';
+      const sorted = [...chats].sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return (b.updatedAt || 0) - (a.updatedAt || 0);
+      });
+
+      sorted.forEach(chat => {
+        const isActive = chat.id === currentChatId;
+        const isPinned = !!chat.pinned;
+        const div = document.createElement('div');
+        div.className = `group relative flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-xs transition-all ${
+          isActive
+            ? 'dark:bg-white/[0.08] bg-slate-200/80 dark:text-white text-slate-900 font-medium'
+            : 'dark:text-slate-400 text-slate-600 hover:dark:bg-white/[0.04] hover:bg-slate-200/50 hover:text-slate-900 dark:hover:text-slate-200 font-normal'
+        }`;
+
+        div.onclick = () => {
+          currentChatId = chat.id;
+          saveChats();
+          renderChatHistory();
+          loadCurrentChatMessages();
+          if (window.innerWidth < 768) toggleSidebar(false);
+        };
+
+        div.innerHTML = `
+          <div class="flex items-center space-x-2 truncate flex-1 pr-1 min-w-0">
+            <i data-lucide="${isPinned ? 'pin' : 'message-square'}" class="w-3 h-3 flex-shrink-0 ${isPinned ? 'text-amber-400 -rotate-45' : (isActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-400')}"></i>
+            <span class="truncate tracking-tight text-[11px]">${escapeHtml(chat.title || 'New Conversation')}</span>
+          </div>
+          <div class="relative chat-menu-container flex items-center" onclick="event.stopPropagation()">
+            <button onclick="toggleChatMenu('${chat.id}')" title="Chat options" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded hover:bg-black/5 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all">
+              <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+            </button>
+            <div id="chat-menu-${chat.id}" class="hidden absolute right-0 top-6 w-32 dark:bg-[#12151e] bg-white border border-black/10 dark:border-white/[0.1] rounded-lg shadow-xl z-50 py-1 font-sans text-[11px] backdrop-blur-xl">
+              <button onclick="togglePinChat('${chat.id}')" class="w-full flex items-center gap-2 px-2.5 py-1.5 dark:text-slate-300 text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer">
+                <i data-lucide="pin" class="w-3 h-3 ${isPinned ? 'text-amber-400' : ''}"></i>
+                <span>${isPinned ? 'Unpin' : 'Pin'}</span>
+              </button>
+              <button onclick="shareChat('${chat.id}')" class="w-full flex items-center gap-2 px-2.5 py-1.5 dark:text-slate-300 text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer">
+                <i data-lucide="share-2" class="w-3 h-3"></i>
+                <span>Copy Text</span>
+              </button>
+              <button onclick="openRenameModal('${chat.id}')" class="w-full flex items-center gap-2 px-2.5 py-1.5 dark:text-slate-300 text-slate-700 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer">
+                <i data-lucide="edit-2" class="w-3 h-3"></i>
+                <span>Rename</span>
+              </button>
+              <div class="my-1 border-t border-black/5 dark:border-white/[0.06]"></div>
+              <button onclick="deleteChat('${chat.id}')" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-rose-500 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        `;
+
+        listContainer.appendChild(div);
+      });
+
+      lucide.createIcons();
+    }
+
+    function toggleChatMenu(chatId) {
+      closeAllMenus();
+      const menu = document.getElementById(`chat-menu-${chatId}`);
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closeAllMenus() {
+      document.querySelectorAll('[id^="chat-menu-"]').forEach(m => m.classList.add('hidden'));
+    }
+
+    function togglePinChat(chatId) {
+      closeAllMenus();
+      const chat = chats.find(c => c.id === chatId);
+      if (chat) {
+        chat.pinned = !chat.pinned;
+        saveChats();
+        renderChatHistory();
+        showToast(chat.pinned ? 'Chat pinned to top' : 'Chat unpinned');
+      }
+    }
+
+    function shareChat(chatId) {
+      closeAllMenus();
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat || !chat.messages || chat.messages.length === 0) {
+        showToast('No messages to copy in this chat', 'error');
+        return;
+      }
+      const text = chat.messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Transcript copied to clipboard');
+      });
+    }
+
+    function exportCurrentChat() {
+      const chat = chats.find(c => c.id === currentChatId);
+      if (!chat || !chat.messages || chat.messages.length === 0) {
+        showToast('No messages to export', 'error');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(chat, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${(chat.title || 'conversation').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Chat exported successfully');
+    }
+
+    function openRenameModal(chatId) {
+      closeAllMenus();
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat) return;
+      chatToRenameId = chatId;
+      const modal = document.getElementById('rename-modal');
+      const input = document.getElementById('rename-input');
+      input.value = chat.title || '';
+      modal.classList.remove('hidden');
+      input.focus();
+    }
+
+    function closeRenameModal() {
+      const modal = document.getElementById('rename-modal');
+      modal.classList.add('hidden');
+      chatToRenameId = null;
+    }
+
+    function handleRenameSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('rename-input');
+      const newTitle = input.value.trim();
+      if (newTitle && chatToRenameId) {
+        const chat = chats.find(c => c.id === chatToRenameId);
+        if (chat) {
+          chat.title = newTitle;
+          saveChats();
+          renderChatHistory();
+          if (currentChatId === chatToRenameId) {
+            document.getElementById('current-chat-title').textContent = newTitle;
+          }
+          showToast('Chat renamed');
+        }
+      }
+      closeRenameModal();
+    }
+
+    function deleteChat(chatId) {
+      closeAllMenus();
+      chats = chats.filter(c => c.id !== chatId);
+      if (chats.length === 0) {
+        startNewChat();
+      } else if (currentChatId === chatId) {
+        currentChatId = chats[0].id;
+        loadCurrentChatMessages();
+      }
+      saveChats();
+      renderChatHistory();
+      showToast('Chat deleted');
+    }
+
+    function renderWelcomeScreen() {
+      return `
+        <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center max-w-2xl mx-auto py-12 px-2 select-none animate-in fade-in duration-300">
+          <div class="mb-5 inline-flex p-3 rounded-2xl dark:bg-white/[0.04] bg-white border border-slate-200 dark:border-white/[0.08] shadow-sm">
+            <svg class="w-6 h-6 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl sm:text-3xl font-bold font-display dark:text-white text-slate-900 tracking-tight mb-2">How can Govandi AI assist?</h3>
+          <p class="text-xs sm:text-sm dark:text-slate-400 text-slate-500 max-w-md mx-auto font-sans">A sleek conversational workspace for reasoning, drafting, and real-time execution.</p>
+        </div>
+      `;
+    }
+
+    function loadCurrentChatMessages() {
+      const chat = chats.find(c => c.id === currentChatId);
+      const container = document.getElementById('chat-messages');
+      const title = document.getElementById('current-chat-title');
+
+      if (!container || !chat) return;
+      title.textContent = chat.title || 'New Conversation';
+      container.innerHTML = '';
+
+      if (!chat.messages || chat.messages.length === 0) {
+        container.innerHTML = renderWelcomeScreen();
+        lucide.createIcons();
+        return;
+      }
+
+      chat.messages.forEach(msg => {
+        appendMessageDOM(msg.role, msg.content, msg.timestamp, msg.isError, false);
+      });
+
+      scrollToBottom();
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+      document.getElementById('send-button').disabled = !el.value.trim() || isProcessing;
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!isProcessing && e.target.value.trim()) {
+          document.getElementById('chat-form').requestSubmit();
+        }
+      }
+    }
+
+    // Submit Message to Webhook
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('user-input');
+      const text = input ? input.value.trim() : '';
+      if (!text || isProcessing) return;
+
+      input.value = '';
+      input.style.height = 'auto';
+      document.getElementById('send-button').disabled = true;
+
+      const chat = chats.find(c => c.id === currentChatId);
+      if (!chat) return;
+
+      if (!chat.messages) chat.messages = [];
+
+      if (chat.messages.length === 0) {
+        chat.title = text.length > 28 ? text.substring(0, 28) + '...' : text;
+        renderChatHistory();
+        document.getElementById('current-chat-title').textContent = chat.title;
+      }
+
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Add user message
+      chat.messages.push({ role: 'user', content: text, timestamp });
+      chat.updatedAt = Date.now();
+      saveChats();
+
+      const welcome = document.getElementById('welcome-screen');
+      if (welcome) welcome.remove();
+
+      appendMessageDOM('user', text, timestamp, false, true);
+
+      // Show indicator
+      isProcessing = true;
+      setProcessingUI(true);
+      const typingId = showTypingIndicator();
+
+      try {
+        const payload = {
+          chatInput: text,
+          action: 'sendMessage',
+          sessionId: sessionId,
+          message: text
+        };
+
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        removeTypingIndicator(typingId);
+        isProcessing = false;
+        setProcessingUI(false);
+
+        const rawText = await response.text();
+        let parsedData = null;
+        try {
+          parsedData = JSON.parse(rawText);
+        } catch (_) {}
+
+        let aiReply = '';
+        let isError = !response.ok;
+
+        if (response.ok) {
+          if (parsedData) {
+            if (typeof parsedData === 'string') {
+              aiReply = parsedData;
+            } else if (Array.isArray(parsedData) && parsedData.length > 0) {
+              const first = parsedData[0];
+              aiReply = first.output || first.cleanedText || first.response || first.text || first.message || JSON.stringify(first, null, 2);
+            } else if (parsedData.output || parsedData.cleanedText || parsedData.response || parsedData.text || parsedData.message) {
+              aiReply = parsedData.output || parsedData.cleanedText || parsedData.response || parsedData.text || parsedData.message;
+            } else {
+              aiReply = JSON.stringify(parsedData, null, 2);
+            }
+          } else {
+            aiReply = rawText || 'Response received from Govandi AI.';
+          }
+        } else {
+          isError = true;
+          if (response.status === 404 && parsedData?.hint) {
+            aiReply = `⚠️ **n8n Notice**\n\n${parsedData.message}\n\n👉 ${parsedData.hint}`;
+          } else if (parsedData?.message) {
+            aiReply = `⚠️ **n8n Response (${response.status})**\n\n${parsedData.message}`;
+          } else {
+            aiReply = `⚠️ **Connection Error (${response.status})**\n\nCould not reach the webhook. Check your n8n workflow.`;
+          }
+        }
+
+        const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        chat.messages.push({ role: 'assistant', content: aiReply, timestamp: replyTime, isError });
+        chat.updatedAt = Date.now();
+        saveChats();
+
+        appendMessageDOM('assistant', aiReply, replyTime, isError, true);
+
+      } catch (err) {
+        removeTypingIndicator(typingId);
+        isProcessing = false;
+        setProcessingUI(false);
+
+        const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const errMsg = `⚠️ **Connection Error**\n\nCould not reach the backend endpoint. Please ensure the server workflow is running.`;
+        chat.messages.push({ role: 'assistant', content: errMsg, timestamp: replyTime, isError: true });
+        chat.updatedAt = Date.now();
+        saveChats();
+
+        appendMessageDOM('assistant', errMsg, replyTime, true, true);
+        showToast('Connection issue', 'error');
+      }
+    }
+
+    function setProcessingUI(processing) {
+      const dot = document.getElementById('connection-dot');
+      const text = document.getElementById('connection-text');
+      if (dot && text) {
+        if (processing) {
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse shadow-[0_0_6px_rgba(251,191,36,0.6)]';
+          text.textContent = 'Processing';
+        } else {
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shadow-[0_0_6px_rgba(52,211,153,0.6)]';
+          text.textContent = 'Ready';
+        }
+      }
+    }
+
+    function appendMessageDOM(role, content, timestamp, isError = false, animate = true) {
+      const container = document.getElementById('chat-messages');
+      if (!container) return;
+
+      const isUser = role === 'user';
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex gap-3 max-w-3xl mx-auto w-full ${isUser ? 'justify-end' : 'justify-start'} ${animate ? 'animate-in fade-in duration-200' : ''}`;
+
+      if (isUser) {
+        wrapper.innerHTML = `
+          <div class="flex flex-col items-end space-y-1 max-w-[85%] sm:max-w-[75%]">
+            <div class="py-2.5 px-4 rounded-2xl rounded-tr-sm text-xs sm:text-sm leading-relaxed dark:bg-[#1a1e2b] bg-slate-800 text-white border border-white/[0.08] shadow-sm whitespace-pre-wrap font-sans">
+              ${escapeHtml(content)}
+            </div>
+            <span class="text-[10px] text-slate-400 font-mono px-1">${timestamp}</span>
+          </div>
+        `;
+      } else {
+        const parsedHtml = typeof marked !== 'undefined' ? marked.parse(content, { breaks: true, gfm: true }) : escapeHtml(content);
+        wrapper.innerHTML = `
+          ${getGovandiLogoSvg('w-6 h-6 mt-0.5')}
+          <div class="flex flex-col space-y-1 flex-1 min-w-0 max-w-[90%] sm:max-w-[85%] group">
+            <div class="bento-card py-3 px-4 sm:px-5 rounded-2xl rounded-tl-sm text-xs sm:text-sm leading-relaxed dark:text-slate-200 text-slate-800 shadow-bento prose-custom relative ${isError ? 'border-amber-500/30 dark:bg-amber-950/20 bg-amber-50/50' : ''}">
+              ${parsedHtml}
+            </div>
+            <div class="flex items-center justify-between px-1 text-[10px] text-slate-400 font-mono">
+              <div class="flex items-center gap-2">
+                <span class="font-medium">Govandi AI</span>
+                <span>•</span>
+                <span>${timestamp}</span>
+                ${isError ? '<span>•</span><span class="text-amber-400">n8n notice</span>' : ''}
+              </div>
+              <button onclick="copyMsgContent(this)" data-content="${encodeURIComponent(content)}" class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-200 text-slate-500 dark:text-slate-400 p-1 rounded cursor-pointer" title="Copy message">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span class="text-[9px]">Copy</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      container.appendChild(wrapper);
+      lucide.createIcons();
+      scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+      const container = document.getElementById('chat-messages');
+      if (!container) return null;
+
+      const id = 'typing_' + Date.now();
+      const wrapper = document.createElement('div');
+      wrapper.id = id;
+      wrapper.className = 'flex gap-3 max-w-3xl mx-auto w-full justify-start animate-in fade-in duration-150';
+
+      wrapper.innerHTML = `
+        ${getGovandiLogoSvg('w-6 h-6 mt-0.5')}
+        <div class="bento-card py-2.5 px-3.5 rounded-xl rounded-tl-sm shadow-bento flex items-center space-x-1.5">
+          <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0ms]"></div>
+          <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:150ms]"></div>
+          <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:300ms]"></div>
+        </div>
+      `;
+
+      container.appendChild(wrapper);
+      scrollToBottom();
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function copyMsgContent(btn) {
+      const text = decodeURIComponent(btn.getAttribute('data-content'));
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Message copied to clipboard');
+      });
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      if (container) container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      if (!toast || !msgEl || !icon) return;
+      msgEl.textContent = message;
+
+      if (type === 'error') {
+        icon.setAttribute('data-lucide', 'alert-circle');
+        icon.className = 'w-3.5 h-3.5 text-rose-400 flex-shrink-0';
+      } else {
+        icon.setAttribute('data-lucide', 'check-circle-2');
+        icon.className = 'w-3.5 h-3.5 text-emerald-400 flex-shrink-0';
+      }
+      lucide.createIcons();
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
