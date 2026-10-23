@@ -600,110 +600,86 @@
                         <p class="text-xs text-slate-400 mb-6 font-medium">Fill out the form below to share your process requirements. We'll reply within 24 hours.</p>
 
                         <form id="booking-form" class="space-y-4" onsubmit="handleBooking(event)">
-                            <div>
-                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Full Name *</label>
-                                <input type="text" id="booking-name" required placeholder="e.g. Rahul Sharma" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Full Name *</label>
+                                    <input type="text" id="booking-name" required placeholder="John Doe" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Email Address *</label>
+                                    <input type="email" id="booking-email" required placeholder="john.doe@example.com" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Email Address *</label>
-                                    <input type="email" id="booking-email" required placeholder="e.g. rahul@company.com" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Phone Number *</label>
+                                    <input type="tel" id="booking-phone" required placeholder="+91 98200 12345" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Contact Number *</label>
-                                    <input type="tel" id="booking-phone" required placeholder="e.g. +91 98765 43210" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Service Interest *</label>
+                                    <select id="booking-service" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                        <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select solution needed</option>
+                                        <option value="Custom AI Automation / Agent" class="bg-[#060b19] text-slate-300">Custom AI Automation / Agent</option>
+                                        <option value="AI Voice Call Agent" class="bg-[#060b19] text-slate-300">AI Voice Call Agent</option>
+                                        <option value="Business Operating System" class="bg-[#060b19] text-slate-300">Business Operating System</option>
+                                    </select>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Service Interest *</label>
-                                <select id="booking-service" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                                    <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select service interest</option>
-                                    <option value="Custom AI Automation or Agent" class="bg-[#060b19] text-slate-300">Custom AI Automation or Agent</option>
-                                    <option value="AI Voice Call Agent" class="bg-[#060b19] text-slate-300">AI Voice Call Agent</option>
-                                    <option value="Business Operating System" class="bg-[#060b19] text-slate-300">Business Operating System</option>
+                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Main Bottleneck or Pain Point *</label>
+                                <textarea id="booking-pain" required rows="2" placeholder="e.g. Missing 30% client calls during peak hours, manual WhatsApp follow-ups..." class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none resize-none"></textarea>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300">How important is solving this for your business? *</label>
+                                    <span id="slider-impact-value" class="text-xs font-bold text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/30">10 / 10</span>
+                                </div>
+                                <div class="px-1 py-2">
+                                    <input type="range" id="business-impact-slider" min="1" max="10" value="10" step="1" oninput="updateImpactSlider(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 border border-cyan-500/20">
+                                    <div class="flex justify-between text-[10px] text-slate-400 font-bold mt-1.5 px-0.5">
+                                        <span>1</span>
+                                        <span>2</span>
+                                        <span>3</span>
+                                        <span>4</span>
+                                        <span>5</span>
+                                        <span>6</span>
+                                        <span>7</span>
+                                        <span>8</span>
+                                        <span>9</span>
+                                        <span>10</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">How much money it costs you to handle this problem? (per month) *</label>
+                                <select id="booking-budget" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                    <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select estimated cost</option>
+                                    <option value="Below ₹10,000" class="bg-[#060b19] text-slate-300">Below ₹10,000</option>
+                                    <option value="₹10,000 - ₹50,000" class="bg-[#060b19] text-slate-300">₹10,000 - ₹50,000</option>
+                                    <option value="₹50,000 - ₹1,00,000" class="bg-[#060b19] text-slate-300">₹50,000 - ₹1,00,000</option>
+                                    <option value="₹1,00,000+" class="bg-[#060b19] text-slate-300">₹1,00,000+</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Pain Point *</label>
-                                <input type="text" id="booking-pain" required placeholder="e.g., High support costs, slow response time, missed leads" class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">How important is solving this for your business? *</label>
-                                <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2 mt-2">
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">1</span>
-                                        <input type="radio" name="business-impact" value="1" required class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">2</span>
-                                        <input type="radio" name="business-impact" value="2" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">3</span>
-                                        <input type="radio" name="business-impact" value="3" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">4</span>
-                                        <input type="radio" name="business-impact" value="4" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">5</span>
-                                        <input type="radio" name="business-impact" value="5" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">6</span>
-                                        <input type="radio" name="business-impact" value="6" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">7</span>
-                                        <input type="radio" name="business-impact" value="7" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">8</span>
-                                        <input type="radio" name="business-impact" value="8" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">9</span>
-                                        <input type="radio" name="business-impact" value="9" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                    <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-input cursor-pointer hover:border-cyan-400 transition-colors">
-                                        <span class="text-[10px] text-cyan-200 font-bold mb-1">10</span>
-                                        <input type="radio" name="business-impact" value="10" class="text-cyan-400 focus:ring-cyan-400 bg-slate-900 border-slate-700">
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">How much money it costs you to handle this problem? *</label>
-                                    <select id="booking-budget" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                                        <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select estimated budget</option>
-                                        <option value="Below ₹10,000" class="bg-[#060b19] text-slate-300">Below ₹10,000</option>
-                                        <option value="₹10,000 - ₹50,000" class="bg-[#060b19] text-slate-300">₹10,000 - ₹50,000</option>
-                                        <option value="₹50,000 - ₹1,00,000" class="bg-[#060b19] text-slate-300">₹50,000 - ₹1,00,000</option>
-                                        <option value="₹1,00,000+" class="bg-[#060b19] text-slate-300">₹1,00,000+</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">How did you hear about us? *</label>
-                                    <select id="booking-source" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                                        <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select source</option>
-                                        <option value="LinkedIn Post / Profile" class="bg-[#060b19] text-slate-300">LinkedIn Post / Profile</option>
-                                        <option value="Direct Website Visit" class="bg-[#060b19] text-slate-300">Direct Website Visit</option>
-                                        <option value="Referral / Friend / Colleague" class="bg-[#060b19] text-slate-300">Referral / Friend / Colleague</option>
-                                        <option value="WhatsApp Community / Message" class="bg-[#060b19] text-slate-300">WhatsApp Community / Message</option>
-                                        <option value="Other Source" class="bg-[#060b19] text-slate-300">Other Source</option>
-                                    </select>
-                                </div>
+                                <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">How did you hear about us? *</label>
+                                <select id="booking-source" required class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                                    <option value="" disabled selected class="bg-[#060b19] text-slate-300">Select source</option>
+                                    <option value="LinkedIn Post / Profile" class="bg-[#060b19] text-slate-300">LinkedIn Post / Profile</option>
+                                    <option value="Direct Website Visit" class="bg-[#060b19] text-slate-300">Direct Website Visit</option>
+                                    <option value="Referral / Friend / Colleague" class="bg-[#060b19] text-slate-300">Referral / Friend / Colleague</option>
+                                    <option value="WhatsApp Community / Message" class="bg-[#060b19] text-slate-300">WhatsApp Community / Message</option>
+                                    <option value="Other Source" class="bg-[#060b19] text-slate-300">Other Source</option>
+                                </select>
                             </div>
 
                             <div>
                                 <label class="block text-xs font-extrabold uppercase tracking-wider text-cyan-300 mb-1">Any Notes</label>
-                                <textarea id="booking-notes" rows="3" placeholder="Tell us about your manual process, goals, or preferred call time..." class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none resize-none"></textarea>
+                                <textarea id="booking-notes" rows="3" placeholder="e.g. Prefer call after 6 PM IST, looking to integrate with GoHighLevel CRM..." class="w-full glass-input rounded-xl px-4 py-2.5 text-sm focus:outline-none resize-none"></textarea>
                             </div>
 
                             <button type="submit" id="booking-submit-btn" class="w-full py-3.5 px-6 btn-stellar-primary text-slate-950 font-bold rounded-xl text-sm border border-white/60 transition-all flex items-center justify-center gap-2">
@@ -979,7 +955,7 @@
             const submitBtn = document.getElementById('booking-submit-btn');
             const originalBtnText = submitBtn.innerHTML;
 
-            const selectedImpact = document.querySelector('input[name="business-impact"]:checked');
+            const impactSlider = document.getElementById('business-impact-slider');
 
             const formData = {
                 fullName: document.getElementById('booking-name').value,
@@ -987,7 +963,7 @@
                 phone: document.getElementById('booking-phone').value,
                 serviceInterest: document.getElementById('booking-service').value,
                 painPoint: document.getElementById('booking-pain').value,
-                businessImpact: selectedImpact ? selectedImpact.value : '',
+                businessImpact: impactSlider ? impactSlider.value : '10',
                 budgetRange: document.getElementById('booking-budget').value,
                 source: document.getElementById('booking-source').value,
                 notes: document.getElementById('booking-notes').value,
@@ -1035,6 +1011,13 @@
                 if (icon) {
                     icon.classList.toggle('rotate-180');
                 }
+            }
+        }
+
+        function updateImpactSlider(val) {
+            const display = document.getElementById('slider-impact-value');
+            if (display) {
+                display.textContent = `${val} / 10`;
             }
         }
     </script>
